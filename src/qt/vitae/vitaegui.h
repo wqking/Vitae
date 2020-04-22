@@ -20,7 +20,6 @@
 #include "qt/vitae/send.h"
 #include "qt/vitae/receivewidget.h"
 #include "qt/vitae/addresseswidget.h"
-#include "qt/vitae/privacywidget.h"
 #include "qt/vitae/coldstakingwidget.h"
 #include "qt/vitae/fundamentalnodeswidget.h"
 #include "qt/vitae/masternodeswidget.h"
@@ -67,7 +66,6 @@ public Q_SLOTS:
     void goToSend();
     void goToReceive();
     void goToAddresses();
-    void goToPrivacy();
     void goToFundamentalNodes();
     void goToMasterNodes();
     void goToColdStaking();
@@ -132,7 +130,6 @@ private:
     SendWidget *sendWidget = nullptr;
     ReceiveWidget *receiveWidget = nullptr;
     AddressesWidget *addressesWidget = nullptr;
-    PrivacyWidget *privacyWidget = nullptr;
     MasterNodesWidget *masterNodesWidget = nullptr;
     FundamentalNodesWidget *fundamentalNodesWidget = nullptr;
     ColdStakingWidget *coldStakingWidget = nullptr;

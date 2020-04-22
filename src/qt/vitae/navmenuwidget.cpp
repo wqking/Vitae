@@ -57,8 +57,7 @@ NavMenuWidget::NavMenuWidget(VITAEGUI *mainWindow, QWidget *parent) :
     ui->btnReceive->setText("RECEIVE\n");
     ui->btnReceive->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
 
-    ui->btnPrivacy->setProperty("name", "privacy");
-    btns = {ui->btnDashboard, ui->btnSend, ui->btnReceive, ui->btnAddress, ui->btnPrivacy, ui->btnFundamental, ui->btnMaster, ui->btnColdStaking, ui->btnSettings, ui->btnColdStaking};
+    btns = {ui->btnDashboard, ui->btnSend, ui->btnReceive, ui->btnAddress, ui->btnFundamental, ui->btnMaster, ui->btnColdStaking, ui->btnSettings, ui->btnColdStaking};
     onNavSelected(ui->btnDashboard, true);
 
     ui->scrollAreaNav->setWidgetResizable(true);
@@ -75,17 +74,8 @@ NavMenuWidget::NavMenuWidget(VITAEGUI *mainWindow, QWidget *parent) :
 }
 
 void NavMenuWidget::loadWalletModel() {
-    if (walletModel) {
-        if (walletModel->getZerocoinBalance() > 0) {
-            ui->btnPrivacy->setText("PRIVACY\n");
-            ui->btnPrivacy->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-            connect(ui->btnPrivacy, &QPushButton::clicked, this, &NavMenuWidget::onPrivacyClicked);
-        } else {
-            ui->btnPrivacy->setVisible(false);
-        }
-
-        if (walletModel->getOptionsModel())
-            ui->btnColdStaking->setVisible(walletModel->getOptionsModel()->isColdStakingScreenEnabled());
+    if (walletModel && walletModel->getOptionsModel()) {
+        ui->btnColdStaking->setVisible(walletModel->getOptionsModel()->isColdStakingScreenEnabled());
     }
 }
 
@@ -106,7 +96,6 @@ void NavMenuWidget::connectActions() {
     ui->btnSend->setShortcut(QKeySequence(SHORT_KEY + Qt::Key_2));
     ui->btnReceive->setShortcut(QKeySequence(SHORT_KEY + Qt::Key_3));
     ui->btnAddress->setShortcut(QKeySequence(SHORT_KEY + Qt::Key_4));
-    ui->btnPrivacy->setShortcut(QKeySequence(SHORT_KEY + Qt::Key_5));
     ui->btnFundamental->setShortcut(QKeySequence(SHORT_KEY + Qt::Key_6));
     ui->btnMaster->setShortcut(QKeySequence(SHORT_KEY + Qt::Key_7));
     ui->btnColdStaking->setShortcut(QKeySequence(SHORT_KEY + Qt::Key_8));
@@ -128,11 +117,6 @@ void NavMenuWidget::onAddressClicked(){
     onNavSelected(ui->btnAddress);
 }
 
-
-void NavMenuWidget::onPrivacyClicked(){
-    window->goToPrivacy();
-    onNavSelected(ui->btnPrivacy);
-}
 
 void NavMenuWidget::onFundamentalNodesClicked(){
     window->goToFundamentalNodes();
@@ -193,7 +177,6 @@ void NavMenuWidget::updateButtonStyles(){
          ui->btnDashboard,
          ui->btnSend,
          ui->btnAddress,
-         ui->btnPrivacy,
          ui->btnFundamental,
          ui->btnMaster,
          ui->btnSettings,

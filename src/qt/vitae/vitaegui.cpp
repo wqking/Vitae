@@ -480,10 +480,6 @@ void VITAEGUI::goToAddresses(){
     showTop(addressesWidget);
 }
 
-void VITAEGUI::goToPrivacy(){
-    if (privacyWidget) showTop(privacyWidget);
-}
-
 void VITAEGUI::goToFundamentalNodes(){
     showTop(fundamentalNodesWidget);
 }
@@ -594,16 +590,6 @@ bool VITAEGUI::addWallet(const QString& name, WalletModel* walletModel)
     masterNodesWidget->setWalletModel(walletModel);
     coldStakingWidget->setWalletModel(walletModel);
     settingsWidget->setWalletModel(walletModel);
-
-    // Privacy screen
-    if (walletModel->getZerocoinBalance() > 0) {
-        privacyWidget = new PrivacyWidget(this);
-        stackedContainer->addWidget(privacyWidget);
-
-        privacyWidget->setWalletModel(walletModel);
-        connect(privacyWidget, &PrivacyWidget::message, this, &VITAEGUI::message);
-        connect(privacyWidget, &PrivacyWidget::showHide, this, &VITAEGUI::showHide);
-    }
 
     // Connect actions..
     connect(fundamentalNodesWidget, &FundamentalNodesWidget::message, this, &VITAEGUI::message);
