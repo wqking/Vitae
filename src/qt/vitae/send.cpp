@@ -18,7 +18,6 @@
 #include "script/standard.h"
 #include "zvit/deterministicmint.h"
 #include "openuridialog.h"
-#include "qt/zVitcontroldialog.h"
 
 SendWidget::SendWidget(VITAEGUI* parent) :
     PWidget(parent),
@@ -45,15 +44,7 @@ SendWidget::SendWidget(VITAEGUI* parent) :
     setCssProperty(ui->labelTitle, "text-title-screen");
     ui->labelTitle->setFont(fontLight);
 
-    /* Button Group */
-    ui->pushLeft->setText("VIT");
-    setCssProperty(ui->pushLeft, "btn-check-left");
-    ui->pushLeft->setChecked(true);
-    ui->pushRight->setText("zVIT");
-    setCssProperty(ui->pushRight, "btn-check-right");
-
     /* Subtitle */
-    ui->labelSubtitle1->setText(tr("You can transfer public coins (VIT) or private coins (zVIT)"));
     setCssProperty(ui->labelSubtitle1, "text-subtitle");
 
     ui->labelSubtitle2->setText(tr("Select coin type to spend"));
@@ -139,8 +130,6 @@ SendWidget::SendWidget(VITAEGUI* parent) :
     setCustomFeeSelected(false);
 
     // Connect
-    connect(ui->pushLeft, &QPushButton::clicked, [this](){onVITSelected(true);});
-    connect(ui->pushRight,  &QPushButton::clicked, [this](){onVITSelected(false);});
     connect(ui->pushButtonSave, &QPushButton::clicked, this, &SendWidget::onSendClicked);
     connect(ui->pushButtonAddRecipient, &QPushButton::clicked, this, &SendWidget::onAddEntryClicked);
     connect(ui->pushButtonClear, &QPushButton::clicked, [this](){clearAll(true);});
@@ -148,9 +137,6 @@ SendWidget::SendWidget(VITAEGUI* parent) :
 
 void SendWidget::refreshView()
 {
-    const bool isChecked = ui->pushLeft->isChecked();
-    ui->pushButtonSave->setText(isChecked ? tr("Send VIT") : tr("Send zVIT"));
-    ui->pushButtonAddRecipient->setVisible(isChecked);
     refreshAmounts();
 }
 
@@ -165,10 +151,9 @@ void SendWidget::refreshAmounts()
             total += amount;
     }
 
-    bool isZvit = ui->pushRight->isChecked();
     nDisplayUnit = walletModel->getOptionsModel()->getDisplayUnit();
 
-    ui->labelAmountSend->setText(GUIUtil::formatBalance(total, nDisplayUnit, isZvit));
+    ui->labelAmountSend->setText(GUIUtil::formatBalance(total, nDisplayUnit, false));
 
     CAmount totalAmount = 0;
     if (CoinControlDialog::coinControl->HasSelected()) {
@@ -177,16 +162,14 @@ void SendWidget::refreshAmounts()
         ui->labelTitleTotalRemaining->setText(tr("Total remaining from the selected UTXO"));
     } else {
         // Wallet's balance
-        totalAmount = (isZvit ?
-                walletModel->getZerocoinBalance() :
-                walletModel->getBalance(nullptr, fDelegationsChecked)) - total;
+        totalAmount = walletModel->getBalance(nullptr, fDelegationsChecked) - total;
         ui->labelTitleTotalRemaining->setText(tr("Total remaining"));
     }
     ui->labelAmountRemaining->setText(
             GUIUtil::formatBalance(
                     totalAmount,
                     nDisplayUnit,
-                    isZvit
+                    false
                     )
     );
     // show or hide delegations checkbox if need be
@@ -342,18 +325,17 @@ void SendWidget::setFocusOnLastEntry()
 
 void SendWidget::showHideCheckBoxDelegations()
 {
-    // Show checkbox only when there is any available owned delegation,
-    // coincontrol is not selected, and we are trying to spend VIT (not zVIT)
-    const bool isZvit = ui->pushRight->isChecked();
+    // Show checkbox only when there is any available owned delegation and
+    // coincontrol is not selected.
     const bool isCControl = CoinControlDialog::coinControl->HasSelected();
     const bool hasDel = cachedDelegatedBalance > 0;
 
-    const bool showCheckBox = !isZvit && !isCControl && hasDel;
+    const bool showCheckBox = !isCControl && hasDel;
     ui->checkBoxDelegations->setVisible(showCheckBox);
     if (showCheckBox)
         ui->checkBoxDelegations->setToolTip(
                 tr("Possibly spend coins delegated for cold-staking (currently available: %1").arg(
-                        GUIUtil::formatBalance(cachedDelegatedBalance, nDisplayUnit, isZvit))
+                        GUIUtil::formatBalance(cachedDelegatedBalance, nDisplayUnit, false))
         );
 }
 
@@ -380,8 +362,6 @@ void SendWidget::onSendClicked()
         return;
     }
 
-    bool sendVit = ui->pushLeft->isChecked();
-
     WalletModel::UnlockContext ctx(walletModel->requestUnlock());
     if (!ctx.isValid()) {
         // Unlock wallet was cancelled
@@ -389,7 +369,7 @@ void SendWidget::onSendClicked()
         return;
     }
 
-    if ((sendVit) ? send(recipients) : sendZvit(recipients)) {
+    if (send(recipients)) {
         updateEntryLabels(recipients);
     }
     setFocusOnLastEntry();
@@ -453,98 +433,6 @@ bool SendWidget::send(QList<SendCoinsRecipient> recipients)
 
     dialog->deleteLater();
     return false;
-}
-
-bool SendWidget::sendZvit(QList<SendCoinsRecipient> recipients)
-{
-    if (!walletModel || !walletModel->getOptionsModel())
-        return false;
-
-    if (sporkManager.IsSporkActive(SPORK_20_ZEROCOIN_MAINTENANCE_MODE)) {
-        Q_EMIT message(tr("Spend Zerocoin"), tr("zVIT is currently undergoing maintenance."), CClientUIInterface::MSG_ERROR);
-        return false;
-    }
-
-    std::list<std::pair<CBitcoinAddress*, CAmount>> outputs;
-    CAmount total = 0;
-    for (SendCoinsRecipient rec : recipients) {
-        total += rec.amount;
-        outputs.push_back(std::pair<CBitcoinAddress*, CAmount>(new CBitcoinAddress(rec.address.toStdString()),rec.amount));
-    }
-
-    // use mints from zVIT selector if applicable
-    std::vector<CMintMeta> vMintsToFetch;
-    std::vector<CZerocoinMint> vMintsSelected;
-    if (!ZVitControlDialog::setSelectedMints.empty()) {
-        vMintsToFetch = ZVitControlDialog::GetSelectedMints();
-
-        for (auto& meta : vMintsToFetch) {
-            CZerocoinMint mint;
-            if (!walletModel->getMint(meta.hashSerial, mint)) {
-                inform(tr("Coin control mint not found"));
-                return false;
-            }
-            vMintsSelected.emplace_back(mint);
-        }
-    }
-
-    QString sendBody = outputs.size() == 1 ?
-            tr("Sending %1 to address %2\n")
-            .arg(BitcoinUnits::formatWithUnit(walletModel->getOptionsModel()->getDisplayUnit(), total, false, BitcoinUnits::separatorAlways))
-            .arg(recipients.first().address)
-            :
-           tr("Sending %1 to addresses:\n%2")
-           .arg(BitcoinUnits::formatWithUnit(walletModel->getOptionsModel()->getDisplayUnit(), total, false, BitcoinUnits::separatorAlways))
-           .arg(recipientsToString(recipients));
-
-    bool ret = false;
-    Q_EMIT message(
-            tr("Spend Zerocoin"),
-            sendBody,
-            CClientUIInterface::MSG_INFORMATION | CClientUIInterface::BTN_MASK | CClientUIInterface::MODAL,
-            &ret);
-
-    if (!ret) return false;
-
-    CZerocoinSpendReceipt receipt;
-
-    std::string changeAddress = "";
-    if (!boost::get<CNoDestination>(&CoinControlDialog::coinControl->destChange)) {
-        changeAddress = CBitcoinAddress(CoinControlDialog::coinControl->destChange).ToString();
-    } else {
-        changeAddress = walletModel->getAddressTableModel()->getAddressToShow().toStdString();
-    }
-
-    if (walletModel->sendZvit(
-            vMintsSelected,
-            receipt,
-            outputs,
-            changeAddress
-    )
-            ) {
-        inform(tr("zVIT transaction sent!"));
-        ZVitControlDialog::setSelectedMints.clear();
-        clearAll(false);
-        return true;
-    } else {
-        QString body;
-        if (receipt.GetStatus() == ZVIT_SPEND_V1_SEC_LEVEL) {
-            body = tr("Version 1 zVIT require a security level of 100 to successfully spend.");
-        } else {
-            int nNeededSpends = receipt.GetNeededSpends(); // Number of spends we would need for this transaction
-            const int nMaxSpends = Params().GetConsensus().ZC_MaxSpendsPerTx; // Maximum possible spends for one zVIT transaction
-            if (nNeededSpends > nMaxSpends) {
-                body = tr("Too much inputs (") + QString::number(nNeededSpends, 10) +
-                       tr(") needed.\nMaximum allowed: ") + QString::number(nMaxSpends, 10);
-                body += tr(
-                        "\nEither mint higher denominations (so fewer inputs are needed) or reduce the amount to spend.");
-            } else {
-                body = QString::fromStdString(receipt.GetStatusMessage());
-            }
-        }
-        Q_EMIT message("zVIT transaction failed", body, CClientUIInterface::MSG_ERROR);
-        return false;
-    }
 }
 
 QString SendWidget::recipientsToString(QList<SendCoinsRecipient> recipients)
@@ -653,31 +541,19 @@ void SendWidget::onChangeCustomFeeClicked()
 
 void SendWidget::onCoinControlClicked()
 {
-    if (isVIT) {
-        if (walletModel->getBalance() > 0) {
-            if (!coinControlDialog) {
-                coinControlDialog = new CoinControlDialog();
-                coinControlDialog->setModel(walletModel);
-            } else {
-                coinControlDialog->refreshDialog();
-            }
-            setCoinControlPayAmounts();
-            coinControlDialog->exec();
-            ui->btnCoinControl->setActive(CoinControlDialog::coinControl->HasSelected());
-            refreshAmounts();
+    if (walletModel->getBalance() > 0) {
+        if (!coinControlDialog) {
+            coinControlDialog = new CoinControlDialog();
+            coinControlDialog->setModel(walletModel);
         } else {
-            inform(tr("You don't have any VIT to select."));
+            coinControlDialog->refreshDialog();
         }
+        setCoinControlPayAmounts();
+        coinControlDialog->exec();
+        ui->btnCoinControl->setActive(CoinControlDialog::coinControl->HasSelected());
+        refreshAmounts();
     } else {
-        if (walletModel->getZerocoinBalance() > 0) {
-            ZVitControlDialog* zVitControl = new ZVitControlDialog(this);
-            zVitControl->setModel(walletModel);
-            zVitControl->exec();
-            ui->btnCoinControl->setActive(!ZVitControlDialog::setSelectedMints.empty());
-            zVitControl->deleteLater();
-        } else {
-            inform(tr("You don't have any zVIT in your balance to select."));
-        }
+        inform(tr("You don't have any %1 to select.").arg(CURRENCY_UNIT.c_str()));
     }
 }
 
@@ -703,14 +579,6 @@ void SendWidget::onCheckBoxChanged()
         fDelegationsChecked = checked;
         refreshAmounts();
     }
-}
-
-void SendWidget::onVITSelected(bool _isVIT)
-{
-    isVIT = _isVIT;
-    setCssProperty(coinIcon, _isVIT ? "coin-icon-vit" : "coin-icon-zvit");
-    refreshView();
-    updateStyle(coinIcon);
 }
 
 void SendWidget::onContactsClicked(SendMultiRow* entry)

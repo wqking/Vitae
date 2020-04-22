@@ -15,7 +15,6 @@ QT_FORMS_UI = \
   qt/forms/optionsdialog.ui \
   qt/forms/rpcconsole.ui \
   qt/vitae/forms/loadingdialog.ui \
-  qt/forms/zVitcontroldialog.ui \
   qt/vitae/forms/snackbar.ui \
   qt/vitae/forms/navmenuwidget.ui \
   qt/vitae/forms/lockunlock.ui \
@@ -103,7 +102,6 @@ QT_MOC_CPP = \
   qt/moc_utilitydialog.cpp \
   qt/moc_walletmodel.cpp \
   qt/vitae/moc_loadingdialog.cpp \
-  qt/moc_zVitcontroldialog.cpp \
   qt/vitae/moc_pwidget.cpp \
   qt/vitae/moc_snackbar.cpp \
   qt/vitae/moc_navmenuwidget.cpp \
@@ -226,7 +224,6 @@ BITCOIN_QT_H = \
   qt/vitae/pfborderimage.h \
   qt/vitae/loadingdialog.h \
   qt/winshutdownmonitor.h \
-  qt/zVitcontroldialog.h \
   qt/vitae/pwidget.h \
   qt/vitae/guitransactionsutils.h \
   qt/vitae/snackbar.h \
@@ -611,7 +608,6 @@ BITCOIN_QT_WALLET_CPP = \
   qt/walletmodel.cpp \
   qt/walletmodeltransaction.cpp \
   qt/vitae/loadingdialog.cpp \
-  qt/zVitcontroldialog.cpp \
   qt/vitae/pwidget.cpp \
   qt/vitae/guitransactionsutils.cpp \
   qt/vitae/snackbar.cpp \
