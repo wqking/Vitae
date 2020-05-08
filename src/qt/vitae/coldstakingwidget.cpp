@@ -547,12 +547,20 @@ void ColdStakingWidget::onCoinControlClicked()
             } else {
                 coinControlDialog->refreshDialog();
             }
+            setCoinControlPayAmounts();
             coinControlDialog->exec();
             ui->btnCoinControl->setActive(CoinControlDialog::coinControl->HasSelected());
         } else {
             inform(tr("You don't have any VIT to select."));
         }
     }
+}
+
+void ColdStakingWidget::setCoinControlPayAmounts()
+{
+    if (!coinControlDialog) return;
+    coinControlDialog->clearPayAmounts();
+    coinControlDialog->addPayAmount(sendMultiRow->getAmountValue());
 }
 
 void ColdStakingWidget::onColdStakeClicked()
