@@ -268,7 +268,7 @@ public:
 
     bool ContainsZerocoins() const
     {
-        return HasZerocoinSpendInputs() || HasZerocoinPublicSpendInputs() || HasZerocoinMintOutputs();
+        return HasZerocoinSpendInputs() || HasZerocoinMintOutputs();
     }
 
     CAmount GetZerocoinMinted() const;
