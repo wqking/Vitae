@@ -182,4 +182,4 @@ static inline size_t RecursiveDynamicUsage(const X& x)
 
 }
 
-#endif
+#endif // BITCOIN_MEMUSAGE_H
