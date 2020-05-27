@@ -28,6 +28,7 @@ src/vitae
 src/vitaed
 src/vitae-cli
 src/vitae-tx
+src/bench/bench_vitae
 src/test/test_vitae
 src/qt/test/test_vitae-qt
 
