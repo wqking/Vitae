@@ -20,6 +20,7 @@
 #include "utiltime.h"
 
 #include <stdarg.h>
+#include <thread>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
@@ -684,9 +685,5 @@ void SetThreadPriority(int nPriority)
 
 int GetNumCores()
 {
-#if BOOST_VERSION >= 105600
-    return boost::thread::physical_concurrency();
-#else // Must fall back to hardware_concurrency, which unfortunately counts virtual cores
-    return boost::thread::hardware_concurrency();
-#endif
+    return std::thread::hardware_concurrency();
 }
