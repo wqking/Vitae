@@ -30,6 +30,7 @@
 #include "fundamentalnodeconfig.h"
 #include "masternodeconfig.h"
 
+#include "fs.h"
 #include "init.h"
 #include "main.h"
 #include "rpcserver.h"
@@ -42,7 +43,6 @@
 
 #include <stdint.h>
 
-#include <boost/filesystem/operations.hpp>
 #include <boost/thread.hpp>
 
 #include <QApplication>
@@ -589,7 +589,7 @@ int main(int argc, char* argv[])
 
     /// 6. Determine availability of data directory and parse vitae.conf
     /// - Do not call GetDataDir(true) before this step finishes
-    if (!boost::filesystem::is_directory(GetDataDir(false))) {
+    if (!fs::is_directory(GetDataDir(false))) {
         QMessageBox::critical(0, QObject::tr("VITAE Core"),
             QObject::tr("Error: Specified data directory \"%1\" does not exist.").arg(QString::fromStdString(mapArgs["-datadir"])));
         return 1;
@@ -678,12 +678,12 @@ int main(int argc, char* argv[])
     std::string strWalletFile = GetArg("-wallet", "wallet.dat");
     std::string strDataDir = GetDataDir().string();
     // Wallet file must be a plain filename without a directory
-    if (strWalletFile != boost::filesystem::basename(strWalletFile) + boost::filesystem::extension(strWalletFile)){
+    if (strWalletFile != fs::basename(strWalletFile) + fs::extension(strWalletFile)){
         throw std::runtime_error(strprintf(_("Wallet %s resides outside data directory %s"), strWalletFile, strDataDir));
     }
 
-    boost::filesystem::path pathBootstrap = GetDataDir() / strWalletFile;
-    if (!boost::filesystem::exists(pathBootstrap)) {
+    fs::path pathBootstrap = GetDataDir() / strWalletFile;
+    if (!fs::exists(pathBootstrap)) {
         // wallet doesn't exist, popup tutorial screen.
         ret = app.createTutorialScreen();
     }

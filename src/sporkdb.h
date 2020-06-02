@@ -6,7 +6,7 @@
 #ifndef VITAE_CSPORKDB_H
 #define VITAE_CSPORKDB_H
 
-#include <boost/filesystem/path.hpp>
+#include "fs.h"
 #include "leveldbwrapper.h"
 #include "spork.h"
 

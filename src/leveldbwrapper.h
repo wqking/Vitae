@@ -6,12 +6,12 @@
 #define BITCOIN_LEVELDBWRAPPER_H
 
 #include "clientversion.h"
+#include "fs.h"
 #include "serialize.h"
 #include "streams.h"
 #include "util.h"
 #include "version.h"
 
-#include <boost/filesystem/path.hpp>
 
 #include <leveldb/db.h>
 #include <leveldb/write_batch.h>
@@ -86,7 +86,13 @@ private:
     leveldb::DB* pdb;
 
 public:
-    CLevelDBWrapper(const boost::filesystem::path& path, size_t nCacheSize, bool fMemory = false, bool fWipe = false);
+    /**
+     * @param[in] path        Location in the filesystem where leveldb data will be stored.
+     * @param[in] nCacheSize  Configures various leveldb cache settings.
+     * @param[in] fMemory     If true, use leveldb's memory environment.
+     * @param[in] fWipe       If true, remove all existing data.
+     */
+    CLevelDBWrapper(const fs::path& path, size_t nCacheSize, bool fMemory = false, bool fWipe = false);
     ~CLevelDBWrapper();
 
     template <typename K, typename V>

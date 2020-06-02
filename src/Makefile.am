@@ -103,6 +103,7 @@ BITCOIN_CORE_H = \
   addressbook.h \
   denomination_functions.h \
   wallet/db.h \
+  fs.h \
   hash.h \
   httprpc.h \
   httpserver.h \
@@ -420,11 +421,12 @@ libbitcoin_common_a_SOURCES = \
 libbitcoin_util_a_CPPFLAGS = $(BITCOIN_INCLUDES) $(BOOST_CPPFLAGS)
 libbitcoin_util_a_SOURCES = \
   allocators.cpp \
-  compat/strnlen.cpp \
-  compat/glibc_sanity.cpp \
-  compat/glibcxx_sanity.cpp \
   chainparamsbase.cpp \
   clientversion.cpp \
+  compat/glibc_sanity.cpp \
+  compat/glibcxx_sanity.cpp \
+  compat/strnlen.cpp \
+  fs.cpp \
   logging.cpp \
   random.cpp \
   rpcprotocol.cpp \

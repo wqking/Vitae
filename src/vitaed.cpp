@@ -7,6 +7,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "clientversion.h"
+#include "fs.h"
 #include "init.h"
 #include "main.h"
 #include "fundamentalnodeconfig.h"
@@ -21,7 +22,6 @@
 #include "masternodeconfig.h"
 
 #include <boost/algorithm/string/predicate.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/thread.hpp>
 
 #include <stdio.h>
@@ -87,7 +87,7 @@ bool AppInit(int argc, char* argv[])
     }
 
     try {
-        if (!boost::filesystem::is_directory(GetDataDir(false))) {
+        if (!fs::is_directory(GetDataDir(false))) {
             fprintf(stderr, "Error: Specified data directory \"%s\" does not exist.\n", mapArgs["-datadir"].c_str());
             return false;
         }

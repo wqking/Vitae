@@ -8,6 +8,7 @@
 #include "masternodeman.h"
 
 #include "addrman.h"
+#include "fs.h"
 #include "masternode.h"
 #include "activemasternode.h"
 #include "messagesigner.h"
@@ -17,7 +18,6 @@
 #include "swifttx.h"
 #include "util.h"
 
-#include <boost/filesystem.hpp>
 #include "activefundamentalnode.h"
 #include "fundamentalnode-payments.h"
 #include "fundamentalnode-sync.h"
@@ -72,7 +72,7 @@ bool CMasternodeDB::Write(const CMasternodeMan& mnodemanToSave)
     ssMasternodes << hash;
 
     // open output file, and associate with CAutoFile
-    FILE *file = fopen(pathMN.string().c_str(), "wb");
+    FILE* file = fsbridge::fopen(pathMN, "wb");
     CAutoFile fileout(file, SER_DISK, CLIENT_VERSION);
     if (fileout.IsNull())
         return error("%s : Failed to open file %s", __func__, pathMN.string());
@@ -97,7 +97,7 @@ CMasternodeDB::ReadResult CMasternodeDB::Read(CMasternodeMan& mnodemanToLoad)
 {
     int64_t nStart = GetTimeMillis();
     // open input file, and associate with CAutoFile
-    FILE *file = fopen(pathMN.string().c_str(), "rb");
+    FILE* file = fsbridge::fopen(pathMN, "rb");
     CAutoFile filein(file, SER_DISK, CLIENT_VERSION);
     if (filein.IsNull())
     {
@@ -106,7 +106,7 @@ CMasternodeDB::ReadResult CMasternodeDB::Read(CMasternodeMan& mnodemanToLoad)
     }
 
     // use file size to size memory buffer
-    int fileSize = boost::filesystem::file_size(pathMN);
+    int fileSize = fs::file_size(pathMN);
     int dataSize = fileSize - sizeof(uint256);
     // Don't try to resize to a negative number if file is small
     if (dataSize < 0)

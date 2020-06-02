@@ -10,6 +10,7 @@
 
 #include "bloom.h"
 #include "compat.h"
+#include "fs.h"
 #include "hash.h"
 #include "limitedmap.h"
 #include "mruset.h"
@@ -28,7 +29,6 @@
 #include <arpa/inet.h>
 #endif
 
-#include <boost/filesystem/path.hpp>
 #include <boost/signals2/signal.hpp>
 
 class CAddrMan;
@@ -753,7 +753,7 @@ void RelayInv(CInv& inv);
 class CAddrDB
 {
 private:
-    boost::filesystem::path pathAddr;
+    fs::path pathAddr;
 
 public:
     CAddrDB();
@@ -766,7 +766,7 @@ public:
 class CBanDB
 {
 private:
-    boost::filesystem::path pathBanlist;
+    fs::path pathBanlist;
 public:
     CBanDB();
     bool Write(const banmap_t& banSet);
