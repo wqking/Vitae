@@ -18,6 +18,10 @@
 #include <string>
 #include <vector>
 
+#include "crypto/common.h"
+#include "memusage.h"
+#include "prevector.h"
+
 typedef std::vector<unsigned char> valtype;
 
 static const unsigned int MAX_SCRIPT_ELEMENT_SIZE = 520; // bytes
@@ -640,6 +644,8 @@ public:
         // The default std::vector::clear() does not release memory.
         std::vector<unsigned char>().swap(*this);
     }
+
+    size_t DynamicMemoryUsage() const;
 };
 
 #endif // BITCOIN_SCRIPT_SCRIPT_H
