@@ -267,36 +267,6 @@ bool CWallet::LoadWatchOnly(const CScript& dest)
     return CCryptoKeyStore::AddWatchOnly(dest);
 }
 
-bool CWallet::AddMultiSig(const CScript& dest)
-{
-    if (!CCryptoKeyStore::AddMultiSig(dest))
-        return false;
-    nTimeFirstKey = 1; // No birthday information
-    NotifyMultiSigChanged(true);
-    if (!fFileBacked)
-        return true;
-    return CWalletDB(strWalletFile).WriteMultiSig(dest);
-}
-
-bool CWallet::RemoveMultiSig(const CScript& dest)
-{
-    AssertLockHeld(cs_wallet);
-    if (!CCryptoKeyStore::RemoveMultiSig(dest))
-        return false;
-    if (!HaveMultiSig())
-        NotifyMultiSigChanged(false);
-    if (fFileBacked)
-        if (!CWalletDB(strWalletFile).EraseMultiSig(dest))
-            return false;
-
-    return true;
-}
-
-bool CWallet::LoadMultiSig(const CScript& dest)
-{
-    return CCryptoKeyStore::AddMultiSig(dest);
-}
-
 bool CWallet::Unlock(const SecureString& strWalletPassphrase, bool stakingOnly)
 {
     CCrypter crypter;
@@ -2084,7 +2054,7 @@ bool CWallet::AvailableCoins(std::vector<COutput>* pCoins,      // --> populates
 
                 isminetype mine = IsMine(pcoin->vout[i]);
                 if (  (mine == ISMINE_NO) ||
-                      ((mine == ISMINE_MULTISIG || mine == ISMINE_SPENDABLE) && nWatchonlyConfig == 2) ||
+                      (mine == ISMINE_SPENDABLE && nWatchonlyConfig == 2) ||
                       (mine == ISMINE_WATCH_ONLY && nWatchonlyConfig == 1) ||
                       (IsLockedCoin((*it).first, i) && nCoinType != ONLY_10000) ||
                       (pcoin->vout[i].nValue <= 0 && !fIncludeZeroValue) ||
@@ -2101,7 +2071,7 @@ bool CWallet::AvailableCoins(std::vector<COutput>* pCoins,      // --> populates
 
                 bool fIsValid = (
                         ((mine & ISMINE_SPENDABLE) != ISMINE_NO) ||
-                        ((mine & (ISMINE_MULTISIG | (fIncludeColdStaking ? ISMINE_COLD : ISMINE_NO) |
+                        ((mine & ((fIncludeColdStaking ? ISMINE_COLD : ISMINE_NO) |
                                 (fIncludeDelegated ? ISMINE_SPENDABLE_DELEGATED : ISMINE_NO) )) != ISMINE_NO));
 
                 // found valid coin
