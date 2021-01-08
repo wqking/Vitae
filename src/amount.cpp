@@ -9,6 +9,8 @@
 
 #include "tinyformat.h"
 
+const std::string CURRENCY_UNIT = "VIT";
+
 CFeeRate::CFeeRate(const CAmount& nFeePaid, size_t nSize)
 {
     if (nSize > 0)

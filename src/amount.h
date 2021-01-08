@@ -13,6 +13,8 @@
 #include <stdlib.h>
 #include <string>
 
+extern const std::string CURRENCY_UNIT;
+
 /** Amount in VIT (Can be negative) */
 typedef int64_t CAmount;
 
