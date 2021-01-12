@@ -47,9 +47,6 @@ SendWidget::SendWidget(VITAEGUI* parent) :
     /* Subtitle */
     setCssProperty(ui->labelSubtitle1, "text-subtitle");
 
-    ui->labelSubtitle2->setText(tr("Select coin type to spend"));
-    setCssProperty(ui->labelSubtitle2, "text-subtitle");
-
     /* Address */
     ui->labelSubtitleAddress->setText(tr("VITAE address or contact label"));
     setCssProperty(ui->labelSubtitleAddress, "text-title");
